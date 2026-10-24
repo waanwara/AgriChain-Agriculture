@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="agentTitle">AgriChain - ผู้ช่วย AI</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            background: #F8F3E7;
+            color: #1D1C14;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        /* =========================
+        APP CONTAINER (รักษาสภาพ Side-by-Side ตลอดเวลา)
+        ========================= */
+
+        .app-container {
+            display: flex;
+            flex-direction: row; /* บังคับวางข้างกันแนวตั้งเสมอ */
+            width: 100%;
+            min-height: 100vh;
+            background: #F8F3E7;
+        }
+
+        /* =========================
+        SIDEBAR (Sticky + Flexbox Layout)
+        ========================= */
+
+        .sidebar {
+            width: 240px;
+            min-width: 240px;
+            height: 100vh;
+
+            position: sticky;
+            top: 0;
+
+            background: #F4F0E6;
+            border-right: 1px solid rgba(128, 85, 50, .10);
+
+            padding: 24px 16px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            z-index: 5;
+            flex-shrink: 0;
+            transition: width 0.3s ease, padding 0.3s ease;
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding: 0 8px;
+        }
+
+        .brand-logo {
+            width: 28px;
+            height: 28px;
+            color: #546341;
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            display: block; 
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #805532;
+            white-space: nowrap;
+        }
+
+        .nav-menu,
+        .sidebar-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            list-style: none;
+        }
+
+        .nav-item {
+            width: 100%;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            width: 100%;
+            height: 44px;
+
+            color: #546341;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .nav-item a .label {
+            display: inline-block; 
+            font-size: 0.95rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .nav-item a:hover {
+            background: rgba(215, 229, 182, 0.55);
+        }
+
+        .nav-item.active a {
+            background: #D7E5B6;
+            color: #546341;
+            font-weight: 700;
+        }
+
+        .nav-icon {
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid rgba(128, 85, 50, .10);
+        }
+
+        /* =========================
+        MAIN CONTENT
+        ========================= */
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            min-height: 100vh;
+            padding: 36px 5% 42px;
+            background: #F8F3E7;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            line-height: 1.2;
+            color: #805532;
+            margin-bottom: 6px;
+        }
+
+        .page-header p {
+            font-size: .95rem;
+            color: #5E674C;
+        }
+
+        /* Language Switch */
+        .language-switch {
+            position: fixed;
+            right: 24px;
+            top: 20px;
+            display: flex;
+            background: #F8F3E7;
+            border: 1px solid rgba(128, 85, 50, .2);
+            border-radius: 20px;
+            padding: 3px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .language-switch button {
+            border: 0;
+            background: transparent;
+            padding: 4px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            color: #546341;
+            font-weight: 500;
+        }
+
+        .language-switch .active {
+            background: #D7E5B6;
+            color: #805532;
+            font-weight: 700;
+        }
+
+        /* =========================
+        INVENTORY SPECIFIC STYLES
+        ========================= */
+
+        .upload-card {
+            width: 100%;
+            min-height: 280px;
+            padding: 40px 24px;
+            background: #E8EED2;
+            border: 2px dashed #A5B68D;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .upload-card.dragover {
+            background: #dce7be;
+            border-color: #805532;
+            transform: scale(0.995);
+        }
+
+        .upload-icon-box {
+            width: 72px;
+            height: 72px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8B5A35;
+        }
+
+        .upload-icon-box svg {
+            width: 58px;
+            height: 58px;
+            fill: none;
+            stroke: #8B5A35;
+            stroke-width: 5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .upload-title {
+            margin-bottom: 6px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #8B5A35;
+        }
+
+        .upload-subtitle {
+            font-size: .92rem;
+            color: #5E674C;
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        .recent-card {
+            width: 100%;
+            padding: 24px 28px;
+            background: #F8F3E7;
+            border: 1px solid rgba(128, 85, 50, .12);
+            border-radius: 16px;
+        }
+
+        .recent-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .recent-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #805532;
+            margin: 0;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box input {
+            padding: 6px 12px 6px 34px;
+            border: 1px solid rgba(128, 85, 50, 0.25);
+            border-radius: 8px;
+            background-color: #F8F3E7;
+            color: #1D1C14;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 220px;
+        }
+
+        .search-box input:focus {
+            border-color: #805532;
+            box-shadow: 0 0 0 2px rgba(128, 85, 50, 0.15);
+            background-color: #FFFFFF;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: #805532;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            min-width: 600px;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: .88rem;
+        }
+
+        .data-table th {
+            padding: 10px 8px;
+            color: #546341;
+            font-size: .85rem;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(84, 99, 65, .16);
+        }
+
+        .data-table td {
+            padding: 14px 8px;
+            color: #4E5841;
+            border-bottom: 1px solid rgba(84, 99, 65, .08);
+        }
+
+        .file-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: -3px;
+            margin-right: 8px;
+            color: #8B5A35;
+        }
+
+        .file-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        .file-link {
+            color: #805532;
+            font-weight: 600;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .file-link:hover {
+            color: #546341;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 14px;
+            font-size: .75rem;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .badge-success { background: #D7E5B6; color: #3c4d28; }
+        .badge-progress { background: #F1DFA5; color: #6d5012; }
+        .badge-error { background: #F2B4B4; color: #7C2222; }
+
+        .btn-delete, .btn-preview, .btn-action {
+            background-color: #F8F3E7;
+            color: #4A5835;
+            border: none;
+            padding: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.1s;
+            flex-shrink: 0;
+        }
+
+        .btn-delete:hover, .btn-preview:hover, .btn-action:hover {
+            background-color: #e8e0ce;
+            transform: scale(1.05);
+        }
+
+        .btn-delete svg, .btn-preview svg, .btn-action svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #F8F3E7;
+            width: 90%;
+            max-width: 850px;
+            max-height: 80vh;
+            border-radius: 16px;
+            border: 1px solid rgba(128, 85, 50, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            background: #E8EED2;
+            border-bottom: 1px solid rgba(128, 85, 50, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+            color: #805532;
+            word-break: break-all;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            font-size: 1.8rem;
+            line-height: 1;
+            color: #805532;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        .csv-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .csv-table th, .csv-table td {
+            padding: 8px 12px;
+            border: 1px solid rgba(128, 85, 50, 0.15);
+            text-align: left;
+        }
+
+        .csv-table th {
+            background-color: #D7E5B6;
+            color: #3c4d28;
+            font-weight: 600;
+        }
+
+        .csv-table tr:nth-child(even) {
+            background-color: rgba(215, 229, 182, 0.2);
+        }
+
+        /* =========================
+        AGENT (CHAT) SPECIFIC STYLES
+        ========================= */
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #FFFFFF;
+            border: 1px solid rgba(128, 85, 50, .15);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: .95rem;
+            line-height: 1.6;
+        }
+
+        .chat-bubble.ai {
+            align-self: flex-start;
+            background: #F4F0E6;
+            color: #1D1C14;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            min-width: 200px;
+        }
+
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: #805532;
+            color: #FFFFFF;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 16px 20px;
+            background: #F8F3E7;
+            border-top: 1px solid rgba(128, 85, 50, .12);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid rgba(128, 85, 50, .2);
+            border-radius: 24px;
+            font-size: .95rem;
+            outline: none;
+            background: #FFFFFF;
+        }
+
+        .btn-send {
+            padding: 12px 24px;
+            background: #805532;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: .9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-send:hover {
+            background: #674326;
+        }
+
+        /* =========================
+        RESPONSIVE DESIGN
+        ========================= */
+
+        /* ย่อ Sidebar เมื่อหน้าจอแคบกว่า 768px */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 72px;
+                min-width: 72px;
+                padding: 24px 8px;
+                align-items: center;
+            }
+
+            .brand-header {
+                justify-content: center;
+                padding: 0;
+            }
+
+            .brand-title,
+            .nav-item a .label {
+                display: none !important;
+            }
+
+            .nav-item a {
+                justify-content: center;
+                padding: 0;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .main-content {
+                padding: 20px 12px;
+            }
+
+            .language-switch {
+                right: 12px;
+                top: 12px;
+            }
+
+            .search-box input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="language-switch">
+        <button id="thBtn" class="active">ไทย</button>
+        <button id="enBtn">EN</button>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar เดียวกับ inventory.html -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand-header">
+                    <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 4C12 4 5 8 3 20c8-1 15-6 18-16Z" />
+                        <path d="M4 19c4-5 8-8 14-11" />
+                    </svg>
+                    <div class="brand-title">AgriChain</div>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="/dashboard.html">
+                        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></span>
+                        <span class="label" data-i18n="dashboard">แดชบอร์ด</span>
+                    </a></li>
+                    
+                    <!-- กดปุ่มนี้เพื่อไปหน้า คลังสินค้า -->
+                    <li class="nav-item"><a href="/inventory.html">
+                        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 19V9"/><path d="M12 19V5"/><path d="M19 19v-7"/></svg></span>
+                        <span class="label" data-i18n="warehouse">คลังสินค้า</span>
+                    </a></li>
+
+                    <!-- หน้านี้คือหน้า AI จึงใส่ class="nav-item active" -->
+                    <li class="nav-item active"><a href="/agent.html">
+                        <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="13" rx="3"/><path d="M9 7V5h6v2"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M9 17h6"/></svg></span>
+                        <span class="label" data-i18n="ai">ผู้ช่วย AI</span>
+                    </a></li>
+                </ul>
+            </div>
+            <ul class="sidebar-bottom">
+                <li class="nav-item">
+                    <a href="index.html" id="accountBtn">
+                        <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3-7 8-7s8 3 8 7"></path></svg></span>
+                        <span class="label" data-i18n="account">บัญชี / ออกจากระบบ</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- พื้นที่แสดง Chat หลัก -->
+        <main class="main-content">
+            <header class="page-header">
+                <h1 data-i18n="aiHeader">🤖 ผู้ช่วยวิเคราะห์ข้อมูล AI</h1>
+                <p data-i18n="aiDesc">สอบถามข้อมูลสินค้า ราคา และห่วงโซ่อุปทานด้วยภาษาธรรมชาติ</p>
+            </header>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-bubble ai" data-i18n="aiGreeting">
+                        สวัสดีครับ! ผมคือ AgriChain AI ผู้ช่วยวิเคราะห์ข้อมูลของคุณ มีอะไรให้ผมช่วยเหลือเกี่ยวกับสินค้าและห่วงโซ่อุปทานวันนี้ไหมครับ?
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="userInput" placeholder="พิมพ์คำถามของคุณที่นี่..." data-i18n-placeholder="chatPlaceholder" onkeypress="handleKeyPress(event)" />
+                    <button class="btn-send" onclick="sendMessage()" data-i18n="send">ส่ง</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="i18next.min.js"></script>
+    <script src="translations.js"></script>
+    <script>
+    /* =========================================================
+       SHARED LANGUAGE BRIDGE
+       Dashboard / Inventory / Agent ใช้ localStorage key เดียวกัน
+       ========================================================= */
+    (function () {
+        const LANGUAGE_KEY = "agri_language";
+        const supported = ["th", "en"];
+
+        function normalizeLanguage(lang) {
+            return supported.includes(lang) ? lang : "th";
+        }
+
+        function renderTranslatedElements() {
+            if (typeof window.t !== "function") return;
+
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.dataset.i18n;
+                const translated = window.t(key);
+                if (translated && translated !== key) el.textContent = translated;
+            });
+
+            document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                const translated = window.t(key);
+                if (translated && translated !== key) el.placeholder = translated;
+            });
+
+            document.querySelectorAll("[data-i18n-title]").forEach(el => {
+                const key = el.dataset.i18nTitle;
+                const translated = window.t(key);
+                if (translated && translated !== key) el.title = translated;
+            });
+        }
+
+        function renderLanguage(lang) {
+            lang = normalizeLanguage(lang);
+
+            if (window.i18next && typeof window.i18next.changeLanguage === "function") {
+                window.i18next.changeLanguage(lang)
+                    .then(renderTranslatedElements)
+                    .catch(renderTranslatedElements);
+            } else {
+                renderTranslatedElements();
+            }
+
+            document.querySelectorAll(".language-switch button").forEach(btn => {
+                const isActive =
+                    (btn.id === "thBtn" && lang === "th") ||
+                    (btn.id === "enBtn" && lang === "en") ||
+                    btn.dataset.lang === lang;
+                btn.classList.toggle("active", isActive);
+            });
+
+            document.documentElement.lang = lang;
+        }
+
+        function setSharedLanguage(lang) {
+            lang = normalizeLanguage(lang);
+            localStorage.setItem(LANGUAGE_KEY, lang);
+            renderLanguage(lang);
+            window.dispatchEvent(new CustomEvent("appLanguageChanged", {
+                detail: { language: lang }
+            }));
+        }
+
+        document.querySelectorAll(".language-switch button").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const lang = btn.dataset.lang || (btn.id === "enBtn" ? "en" : "th");
+                setSharedLanguage(lang);
+            });
+        });
+
+        window.addEventListener("storage", event => {
+            if (event.key === LANGUAGE_KEY && event.newValue) {
+                const lang = normalizeLanguage(event.newValue);
+                renderLanguage(lang);
+                window.dispatchEvent(new CustomEvent("appLanguageChanged", {
+                    detail: { language: lang }
+                }));
+            }
+        });
+
+        const initialLanguage = normalizeLanguage(
+            localStorage.getItem(LANGUAGE_KEY) || "th"
+        );
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => renderLanguage(initialLanguage), { once: true });
+        } else {
+            renderLanguage(initialLanguage);
+        }
+    })();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // ระบบรับ-ส่งข้อความ Chat
+        const chatMessages = document.getElementById("chatMessages");
+        const userInput = document.getElementById("userInput");
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        // Confirmation on Sign Out
+        const accountBtn = document.getElementById("accountBtn");
+        if (accountBtn) {
+            accountBtn.addEventListener("click", (e) => {
+                if (!confirm(window.t("logoutConfirm"))) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            if (window.marked && typeof window.marked.parse === 'function') {
+                try {
+                    return window.marked.parse(text);
+                } catch (e) {
+                    console.warn('marked parse error:', e);
+                }
+            }
+            // Fallback parser
+            let html = escapeHtml(text);
+            html = html.replace(/^### (.*$)/gim, '<h4>$1</h4>');
+            html = html.replace(/^## (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^# (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/^\s*-\s+(.*$)/gim, '<li>$1</li>');
+            html = html.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>');
+            return '<p>' + html + '</p>';
+        }
+
+        function renderAIResponse(bubbleElement, data) {
+            const rawText = data.answer || data.reply || data.message || window.t('successProcess');
+            bubbleElement.innerHTML = `<div class="ai-text-content">${formatMarkdown(rawText)}</div>`;
+
+            // แสดงกราฟ Visualization เมื่อมีข้อมูล
+            if (data.visualization && data.visualization.labels && data.visualization.labels.length > 0) {
+                const chartWrapper = document.createElement('div');
+                chartWrapper.className = 'chat-chart-wrapper';
+                const canvas = document.createElement('canvas');
+                chartWrapper.appendChild(canvas);
+                bubbleElement.appendChild(chartWrapper);
+
+                setTimeout(() => {
+                    if (window.Chart) {
+                        const vis = data.visualization;
+                        const colors = [
+                            '#2E7D32', '#F57C00', '#1976D2', '#7B1FA2', '#D32F2F',
+                            '#0097A7', '#5D4037', '#C2185B', '#303F9F', '#00796B'
+                        ];
+                        const datasets = (vis.datasets || []).map((ds, idx) => ({
+                            label: ds.label || 'ยอดขาย',
+                            data: ds.data,
+                            backgroundColor: vis.type === 'line' ? 'transparent' : colors[idx % colors.length] + '99',
+                            borderColor: colors[idx % colors.length],
+                            borderWidth: 2,
+                            borderRadius: vis.type === 'bar' ? 4 : 0,
+                            pointRadius: vis.type === 'line' ? 3 : 0,
+                            tension: vis.type === 'line' ? 0.3 : 0
+                        }));
+
+                        new window.Chart(canvas, {
+                            type: vis.type || 'bar',
+                            data: {
+                                labels: vis.labels,
+                                datasets: datasets
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    title: {
+                                        display: !!vis.title,
+                                        text: vis.title,
+                                        font: { size: 14, weight: 'bold' },
+                                        color: '#2D3748',
+                                        padding: { bottom: 12 }
+                                    },
+                                    legend: {
+                                        display: datasets.length > 1,
+                                        position: 'bottom'
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (ctx) => `${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('th-TH', { maximumFractionDigits: 2 })}`
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        grid: { display: false },
+                                        ticks: { maxRotation: 45, minRotation: 0, font: { size: 11 } }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: 'rgba(0,0,0,0.06)' },
+                                        ticks: {
+                                            callback: (val) => Number(val).toLocaleString('th-TH', { notation: 'compact' })
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }, 50);
+            }
+
+            // แสดงคำสั่ง SQL แบบ Collapsible
+            if (data.sql) {
+                const sqlDetails = document.createElement('details');
+                sqlDetails.className = 'sql-accordion';
+                sqlDetails.innerHTML = `
+                    <summary>🔍 ดูคำสั่ง SQL ที่ใช้ดึงข้อมูล</summary>
+                    <pre><code>${escapeHtml(data.sql)}</code></pre>
+                `;
+                bubbleElement.appendChild(sqlDetails);
+            }
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Helper อ่านค่า Cookie
+        function getCookie(name) {
+            const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+            return m ? decodeURIComponent(m[1]) : null;
+        }
+
+        // ตัวแปรเก็บ local state
+        let localChatHistory = [];
+
+        // ฟังก์ชันตรวจสอบ Server Instance
+        // ถ้าเซิร์ฟเวอร์เพิ่งหยุด/สตาร์ทใหม่ instance ID จะเปลี่ยน -> เคลียร์แคชหน้าบ้านให้เริ่มใหม่ตามโจทย์
+        async function checkServerSession() {
+            try {
+                const res = await fetch('/api/session-info');
+                if (!res.ok) return null;
+                const info = await res.json();
+                const currentId = info.serverInstanceId;
+                const lastId = sessionStorage.getItem('agrichain_srv_id');
+
+                if (lastId && lastId !== currentId) {
+                    // เซิร์ฟเวอร์ restart แล้ว -> เคลียร์ประวัติทั้งหมด
+                    sessionStorage.clear();
+                    localChatHistory = [];
+                }
+                sessionStorage.setItem('agrichain_srv_id', currentId);
+                return currentId;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function restoreChatFromList(list) {
+            // ลบข้อความที่เพิ่มเข้ามาเดิม ยกเว้น Greeting Bubble แรก
+            const bubbles = chatMessages.querySelectorAll('.chat-bubble');
+            for (let i = 1; i < bubbles.length; i++) {
+                bubbles[i].remove();
+            }
+
+            list.forEach(item => {
+                appendBubble(item.question, 'user');
+                const aiBubble = appendBubble('', 'ai');
+                renderAIResponse(aiBubble, item);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function initChatState() {
+            // 1. ตรวจสอบสถานะการ Restart ของเซิร์ฟเวอร์
+            await checkServerSession();
+
+            // 2. กู้คืนข้อความแบบ Instant จาก sessionStorage (ไม่กระพริบเวลาสลับแท็บ)
+            const cached = sessionStorage.getItem('agrichain_chat_history');
+            if (cached) {
+                try {
+                    localChatHistory = JSON.parse(cached);
+                    if (Array.isArray(localChatHistory) && localChatHistory.length > 0) {
+                        restoreChatFromList(localChatHistory);
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse cached chat history', e);
+                }
+            }
+
+            // 3. ดึงข้อมูลล่าสุดจากเซิร์ฟเวอร์มา sync (Server-side In Memory)
+            try {
+                const res = await fetch('/api/chat/history');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.history && Array.isArray(data.history)) {
+                        localChatHistory = data.history;
+                        sessionStorage.setItem('agrichain_chat_history', JSON.stringify(localChatHistory));
+                        restoreChatFromList(localChatHistory);
+                    }
+                }
+            } catch (err) {
+                console.warn('Cannot sync chat history from server:', err);
+            }
+
+            // กู้คืนข้อความที่กำลังพิมพ์ค้างไว้ (Draft)
+            const draft = sessionStorage.getItem('agrichain_draft_chat');
+            if (draft && userInput) {
+                userInput.value = draft;
+            }
+        }
+
+        // บันทึกคำถามที่กำลังพิมพ์อยู่ไว้ใน sessionStorage ชั่วคราว
+        userInput.addEventListener('input', (e) => {
+            sessionStorage.setItem('agrichain_draft_chat', e.target.value);
+        });
+
+        window.addEventListener('DOMContentLoaded', initChatState);
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // พิมพ์ข้อความผู้ใช้
+            appendBubble(text, 'user');
+            userInput.value = '';
+            sessionStorage.removeItem('agrichain_draft_chat');
+
+            // แสดงสถานะกำลังคิด
+            const loadingBubble = appendBubble(window.t('processing'), 'ai');
+
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: text, message: text, user_role: 'analyst' })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                renderAIResponse(loadingBubble, data);
+
+                // บันทึกลง local history และ sessionStorage ทันที
+                const record = {
+                    question: text,
+                    answer: data.answer || data.reply,
+                    sql: data.sql,
+                    visualization: data.visualization
+                };
+                localChatHistory.push(record);
+                sessionStorage.setItem('agrichain_chat_history', JSON.stringify(localChatHistory));
+            })
+            .catch(err => {
+                loadingBubble.innerHTML = `<span style="color:#C62828;">${escapeHtml(window.t('aiError'))}</span>`;
+            });
+        }
+
+        function appendBubble(text, type) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${type}`;
+            if (text) bubble.textContent = text;
+            chatMessages.appendChild(bubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return bubble;
+        }
+    </script>
+</body>
+
+</html>
